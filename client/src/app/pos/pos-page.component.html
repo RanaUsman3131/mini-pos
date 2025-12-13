@@ -1,0 +1,312 @@
+<div class="pos-container">
+  <div class="container-fluid">
+    <div class="pos-header">
+      <h1>🍽️ Restaurant POS System</h1>
+    </div>
+
+    <div class="row g-3">
+      <!-- Left Column (8 cols) - Tables & Menu -->
+      <div class="col-12 col-lg-8">
+        <!-- Tables Section -->
+        <div class="section-card mb-3">
+          <div class="card-header">📍 Tables</div>
+          <div class="card-body">
+            <div class="row g-3">
+              @if (tables() && tables()!.data) { @for (table of tables()!.data; track table.id) {
+              <div class="col-6 col-md-4 col-lg-3">
+                <div
+                  class="table-box"
+                  [class.selected]="cart().tableId === table.id"
+                  (click)="selectTable(table)"
+                >
+                  <div class="table-number">{{ table.name || 'Table ' + table.id }}</div>
+                  <div class="table-capacity">
+                    <span class="capacity-icon">👥</span>
+                    <span>{{ table.capacity || 4 }} persons</span>
+                  </div>
+                </div>
+              </div>
+              } } @if (!tables()?.data?.length) {
+              <div class="col-12">
+                <div class="empty-state">No tables available</div>
+              </div>
+              }
+            </div>
+          </div>
+        </div>
+
+        <!-- Menu Section -->
+        <div class="section-card">
+          <div class="card-header d-flex justify-content-between align-items-center">
+            <span>🍔 Menu Items</span>
+            <span class="badge bg-light text-dark">{{ menus()?.data?.length || 0 }} items</span>
+          </div>
+          <div class="card-body menu-section">
+            <div class="row g-3">
+              @if (menus() && menus()!.data) { @for (item of menus()!.data; track item.id) {
+              <div class="col-12 col-sm-6 col-md-4 col-lg-3">
+                <div class="menu-card" (click)="addItem(item)">
+                  <div class="menu-card-image">
+                    <div class="menu-placeholder">🍽️</div>
+                  </div>
+                  <div class="menu-card-content">
+                    <h6 class="menu-name">{{ item.name }}</h6>
+                    @if (item.price) {
+                    <div class="menu-price">${{ item.price }}</div>
+                    } @if (item.category) {
+                    <div class="menu-category">
+                      <small>{{ item.category }}</small>
+                    </div>
+                    }
+                  </div>
+                  <div class="menu-card-footer">
+                    <button class="btn-add-item"><span>+</span> Add to Cart</button>
+                  </div>
+                </div>
+              </div>
+              } } @if (!menus()?.data?.length) {
+              <div class="col-12">
+                <div class="empty-state">No menu items available</div>
+              </div>
+              }
+            </div>
+          </div>
+        </div>
+      </div>
+
+      <!-- Right Column (4 cols) - Order Summary -->
+      <div class="col-12 col-lg-4">
+        <div class="section-card order-card">
+          <div class="card-header">🛒 Current Order</div>
+          <div class="card-body order-body">
+            @if (!cart().tableId) {
+            <div class="alert alert-info" style="border-radius: 10px">
+              <div class="text-center">
+                <div class="mb-2" style="font-size: 2rem">👆</div>
+                <strong>Select a table first</strong>
+                <p class="mb-0 small">Choose an available table to start ordering</p>
+              </div>
+            </div>
+            } @if (cart().tableId) {
+            <div class="selected-table-info mb-3">
+              <div class="d-flex justify-content-between align-items-center">
+                <span><strong>Table:</strong></span>
+                <span class="badge bg-primary">
+                  {{ cart().tableName }}
+                </span>
+              </div>
+            </div>
+            } @if (cart().tableId && !cart().items.length) {
+            <div class="empty-cart">
+              <div class="text-center py-4">
+                <div style="font-size: 3rem; opacity: 0.3">🛒</div>
+                <p class="text-muted mb-0">Your cart is empty</p>
+                <small class="text-muted">Add items from the menu</small>
+              </div>
+            </div>
+            } @if (cart().items.length) {
+            <div class="cart-items-list">
+              @for (item of cart().items; track item.menuId; let i = $index) {
+              <div class="cart-item">
+                <div class="cart-item-info">
+                  <h6 class="cart-item-name">{{ item.menuName }}</h6>
+                  @if (item.price) {
+                  <div class="cart-item-price">${{ item.price * item.qty }}</div>
+                  }
+                </div>
+                <div class="cart-item-actions">
+                  <div class="quantity-controls">
+                    <button class="btn-qty" (click)="decrement(i)">−</button>
+                    <span class="qty-display">{{ item.qty }}</span>
+                    <button class="btn-qty" (click)="increment(i)">+</button>
+                  </div>
+                  <button class="btn-remove" (click)="remove(i)">🗑️</button>
+                </div>
+              </div>
+              }
+            </div>
+
+            <div class="order-summary">
+              <div class="summary-row">
+                <span>Total Items:</span>
+                <strong>{{ totalItems() }}</strong>
+              </div>
+              @if (cart().items[0]?.price) {
+              <div class="summary-row">
+                <span>Total:</span>
+                <strong>${{ calculateTotal() }}</strong>
+              </div>
+              }
+            </div>
+            }
+          </div>
+
+          <div class="card-footer order-footer">
+            <button
+              class="btn btn-outline-secondary btn-clear w-100 mb-2"
+              (click)="clear()"
+              [disabled]="!cart().items.length"
+            >
+              🗑️ Clear Cart
+            </button>
+            <button
+              class="btn-place-order w-100"
+              (click)="placeOrder()"
+              [disabled]="!canPlaceOrder()"
+            >
+              ✅ Place Order
+            </button>
+          </div>
+        </div>
+
+        <!-- Old Orders Section -->
+        <div class="section-card order-card mt-3">
+          <div class="card-header d-flex justify-content-between align-items-center">
+            <span>📋 Recent Orders</span>
+            <span class="badge bg-light text-dark">{{ orders()?.data?.length || 0 }}</span>
+          </div>
+          <div class="card-body order-body">
+            @if (orders() && orders()!.data && orders()!.data.length > 0) {
+            <div class="orders-list">
+              @for (order of orders()!.data; track order.id) {
+              <div class="order-item" (click)="viewOrderDetails(order)">
+                <div class="order-item-header">
+                  <div>
+                    <strong>#{{ order.id }}</strong>
+                    <span class="text-muted ms-2">{{
+                      order.tableName || 'Table ' + order.tableId
+                    }}</span>
+                  </div>
+                  <div class="d-flex gap-2">
+                    @if (order.status) {
+                    <span
+                      class="badge"
+                      [ngClass]="{
+                        'bg-warning text-dark': order.status === 'PENDING',
+                        'bg-success': order.status === 'CONFIRMED',
+                        'bg-danger': order.status != 'PENDING' && order.status != 'CONFIRMED' ,
+
+                      }"
+                    >
+                      {{ order.status | titlecase }}
+                    </span>
+                    }
+                    <span class="badge bg-primary">{{ getOrderItemsCount(order) }} items</span>
+                  </div>
+                </div>
+                <div class="order-item-footer">
+                  <small class="text-muted">
+                    {{ order.createdAt ? (order.createdAt | date : 'short') : 'Recent' }}
+                  </small>
+                  @if (order.items && order.items[0]?.price) {
+                  <strong class="text-success">${{ getOrderTotal(order) }}</strong>
+                  }
+                </div>
+              </div>
+              }
+            </div>
+            } @else {
+            <div class="empty-state py-4">
+              <div style="font-size: 2rem; opacity: 0.3">📝</div>
+              <p class="text-muted mb-0">No orders yet</p>
+            </div>
+            }
+          </div>
+        </div>
+      </div>
+    </div>
+  </div>
+</div>
+
+<!-- Order Details Modal -->
+@if (showOrderModal() && selectedOrder()) {
+<div class="modal-backdrop show" (click)="closeOrderModal()"></div>
+<div class="modal show d-block" tabindex="-1">
+  <div class="modal-dialog modal-dialog-centered modal-lg">
+    <div class="modal-content">
+      <div class="modal-header">
+        <h5 class="modal-title">Order #{{ selectedOrder()!.id }}</h5>
+        <button type="button" class="btn-close" (click)="closeOrderModal()"></button>
+      </div>
+      <div class="modal-body">
+        <div class="mb-3">
+          <div class="row">
+            <div class="col-md-4 mb-2">
+              <strong>Table:</strong>
+              <span class="ms-2">{{
+                selectedOrder()!.tableName || 'Table ' + selectedOrder()!.tableId
+              }}</span>
+            </div>
+            <div class="col-md-4 mb-2">
+              <strong>Date:</strong>
+              <span class="ms-2">
+                {{
+                  selectedOrder()!.createdAt ? (selectedOrder()!.createdAt | date : 'short') : 'N/A'
+                }}
+              </span>
+            </div>
+            <div class="col-md-4 mb-2">
+              <strong>Status:</strong>
+              @if (selectedOrder()!.status) {
+              <span
+                class="ms-2 badge"
+                [ngClass]="{
+                  'bg-warning': selectedOrder()!.status === 'PENDING',
+                  'bg-success': selectedOrder()!.status === 'CONFIRMED',
+                  'bg-danger': selectedOrder()!.status != 'PENDING' && selectedOrder()!.status != 'CONFIRMED' ,
+
+                }"
+              >
+                {{ selectedOrder()!.status | titlecase }}
+              </span>
+              } @else {
+              <span class="ms-2 text-muted">N/A</span>
+              }
+            </div>
+          </div>
+        </div>
+
+        <h6 class="mb-3">Order Items:</h6>
+        <div class="table-responsive">
+          <table class="table table-bordered">
+            <thead>
+              <tr>
+                <th>Item</th>
+                <th class="text-center">Quantity</th>
+                @if (selectedOrder()!.items && selectedOrder()!.items[0]?.price) {
+                <th class="text-end">Price</th>
+                <th class="text-end">Subtotal</th>
+                }
+              </tr>
+            </thead>
+            <tbody>
+              @for (item of selectedOrder()!.items; track $index) {
+
+              <tr>
+                <td>{{ item.menuName }}</td>
+                <td class="text-center">{{ item.quantity }}</td>
+                @if (item.price) {
+                <td class="text-end">${{ item.price }}</td>
+                <td class="text-end">${{ item.lineTotal }}</td>
+                }
+              </tr>
+              }
+            </tbody>
+            @if (selectedOrder()!.items && selectedOrder()!.items[0]?.price) {
+            <tfoot>
+              <tr>
+                <th colspan="3" class="text-end">Total:</th>
+                <th class="text-end">${{ getOrderTotal(selectedOrder()!) }}</th>
+              </tr>
+            </tfoot>
+            }
+          </table>
+        </div>
+      </div>
+      <div class="modal-footer">
+        <button type="button" class="btn btn-secondary" (click)="closeOrderModal()">Close</button>
+      </div>
+    </div>
+  </div>
+</div>
+}
