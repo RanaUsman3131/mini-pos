@@ -1,6 +1,9 @@
 import express from "express";
 import cors from "cors";
 import proxy from "express-http-proxy";
+import dotenv from "dotenv";
+
+dotenv.config();
 
 const app = express();
 
@@ -31,10 +34,10 @@ const proxyOptions = {
   },
 };
 
-app.use("/menus", proxy("http://localhost:8002", proxyOptions)); // Menu Service
-app.use("/tables", proxy("http://localhost:8004", proxyOptions)); // Table Service
-app.use("/orders", proxy("http://localhost:8005", proxyOptions)); // Orders Service
+app.use("/menus", proxy(process.env.MENU_SERVICE_URL, proxyOptions)); // Menu Service
+app.use("/tables", proxy(process.env.TABLE_SERVICE_URL, proxyOptions)); // Table Service
+app.use("/orders", proxy(process.env.ORDER_SERVICE_URL, proxyOptions)); // Orders Service
 
-app.listen(8000, () => {
-  console.log("Gateway is Listening to Port 8000");
+app.listen(process.env.PORT || 8000, () => {
+  console.log(`Gateway is Listening to Port ${process.env.PORT || 8000}`);
 });
