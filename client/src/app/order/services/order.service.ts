@@ -9,6 +9,7 @@ export class Order extends Resource {
   public tableId: string = '';
   public tableName: string = '';
   public status: string = '';
+  public failureReason: string = '';
 
   public items: Array<{
     lineTotal: number;

@@ -238,6 +238,13 @@
                   <strong class="text-success">${{ getOrderTotal(order) }}</strong>
                   }
                 </div>
+                @if (order.failureReason) {
+                <div class="order-failure-reason">
+                  <small class="text-danger">
+                    <strong>⚠️ {{ order.failureReason }}</strong>
+                  </small>
+                </div>
+                }
               </div>
               }
             </div>
@@ -301,6 +308,13 @@
             </div>
           </div>
         </div>
+
+        @if (selectedOrder()!.failureReason) {
+        <div class="alert alert-danger" role="alert">
+          <h6 class="alert-heading">⚠️ Order Failed</h6>
+          <p class="mb-0"><strong>Reason:</strong> {{ selectedOrder()!.failureReason }}</p>
+        </div>
+        }
 
         <h6 class="mb-3">Order Items:</h6>
         <div class="table-responsive">
