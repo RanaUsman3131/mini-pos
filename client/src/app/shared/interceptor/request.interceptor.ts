@@ -19,7 +19,7 @@ export function requestInterceptor(req: HttpRequest<unknown>, next: HttpHandlerF
   window.EXPORTMODE = false;
 
   if (!req.url.startsWith('http')) {
-    const baseUrl = replace('http://localhost:8000', /\/+$/, ''); // Remove trailing slashes
+    const baseUrl = replace('http://localhost:8005', /\/+$/, ''); // Remove trailing slashes
     const requestUrl = replace(req.url, /^\/+/, '');
 
     return next(

@@ -1,28 +1,34 @@
-import { updateOrder } from "../repositories/order.repo.js";
+import { updateOrder, deleteOrder } from "../repositories/order.repo.js";
 import { EVENTS } from "../constants/eventTypes.js";
 import { consumeQueue, connectRabbitMQ } from "../config/rabbitmq.js";
+import { publishEvent } from "../events/event.publisher.js";
 
 const QUEUE_NAME = "order_service_queue";
 
 export const setupOrderListeners = async () => {
   try {
-    // Connect to RabbitMQ
     await connectRabbitMQ();
 
-    // Listen for ORDER_ENRICHED and ORDER_FAILED events
     await consumeQueue(
       QUEUE_NAME,
-      [EVENTS.ORDER_ENRICHED, EVENTS.ORDER_FAILED],
+      [
+        EVENTS.ORDER_ENRICHED,
+        EVENTS.ORDER_FAILED,
+        EVENTS.TABLE_OCCUPIED,
+        EVENTS.TABLE_OCCUPY_FAILED,
+      ],
       async (message, routingKey) => {
         if (routingKey === EVENTS.ORDER_ENRICHED) {
           await handleOrderEnriched(message);
         } else if (routingKey === EVENTS.ORDER_FAILED) {
           await handleOrderFailed(message);
+        } else if (routingKey === EVENTS.TABLE_OCCUPIED) {
+          await handleTableOccupied(message);
+        } else if (routingKey === EVENTS.TABLE_OCCUPY_FAILED) {
+          await handleTableOccupyFailed(message);
         }
       }
     );
-
-    console.log(`[LISTENER] Order Service listening for events`);
   } catch (error) {
     console.error("[LISTENER] Failed to setup listeners:", error);
     // Retry connection after 5 seconds
@@ -40,8 +46,6 @@ export const handleOrderEnriched = async (payload) => {
       status: "CONFIRMED",
       updatedAt: new Date().toISOString(),
     });
-
-    console.log(`[ORDER] Order ${orderId} enriched and confirmed`);
   } catch (error) {
     console.error(`[ORDER] Failed to enrich order:`, error);
     throw error;
@@ -57,13 +61,37 @@ export const handleOrderFailed = async (payload) => {
       failureReason: reason,
       updatedAt: new Date().toISOString(),
     });
-
-    console.log(`[ORDER] Order ${orderId} failed: ${reason}`);
   } catch (error) {
-    console.error(`[ORDER] Failed to update failed order:`, error);
     throw error;
   }
 };
 
-// Initialize listeners
+export const handleTableOccupied = async (payload) => {
+  try {
+    const { orderId, tableId, status } = payload;
+
+    await updateOrder(orderId, {
+      tableStatus: status,
+      updatedAt: new Date().toISOString(),
+    });
+  } catch (error) {
+    console.error(`[ORDER] Failed to handle table occupied:`, error);
+  }
+};
+
+export const handleTableOccupyFailed = async (payload) => {
+  try {
+    const { orderId, tableId, reason } = payload;
+
+    await deleteOrder(orderId);
+
+    await publishEvent(EVENTS.ORDER_FAILED, {
+      orderId,
+      reason: `Table occupation failed: ${reason}`,
+    });
+  } catch (error) {
+    console.error(`[ORDER] Failed to handle table occupy failure:`, error);
+  }
+};
+
 setupOrderListeners();

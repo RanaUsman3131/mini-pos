@@ -8,7 +8,6 @@ export const createOrder = async (data) => {
     status: "PENDING",
     createdAt: new Date().toISOString(),
   };
-  console.log("Creating order with data:", orderData);
   const doc = await collection.add(orderData);
 
   return { id: doc.id, ...orderData };

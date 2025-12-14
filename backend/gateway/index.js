@@ -38,6 +38,6 @@ app.use("/menus", proxy(process.env.MENU_SERVICE_URL, proxyOptions)); // Menu Se
 app.use("/tables", proxy(process.env.TABLE_SERVICE_URL, proxyOptions)); // Table Service
 app.use("/orders", proxy(process.env.ORDER_SERVICE_URL, proxyOptions)); // Orders Service
 
-app.listen(process.env.PORT || 8000, () => {
-  console.log(`Gateway is Listening to Port ${process.env.PORT || 8000}`);
+app.listen(process.env.PORT || 8005, () => {
+  console.log(`Gateway is Listening to Port ${process.env.PORT || 8005}`);
 });

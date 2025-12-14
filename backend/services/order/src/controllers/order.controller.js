@@ -6,7 +6,6 @@ export const createOrder = async (req, res) => {
   try {
     const { tableId, tableName, items } = req.body;
 
-    // Validation
     if (!tableId) {
       return res.status(400).json({ error: "table Id is required" });
     }
@@ -15,7 +14,6 @@ export const createOrder = async (req, res) => {
       return res.status(400).json({ error: "At least one item is required" });
     }
 
-    // Validate each item
     for (const item of items) {
       if (!item.menuId) {
         return res
@@ -29,7 +27,6 @@ export const createOrder = async (req, res) => {
       }
     }
 
-    // Create order with PENDING status
     const order = await repo.createOrder({
       tableId,
       tableName,
@@ -39,7 +36,12 @@ export const createOrder = async (req, res) => {
       })),
     });
 
-    // Emit ORDER_CREATED event
+    await publishEvent(EVENTS.TABLE_OCCUPY_REQUESTED, {
+      orderId: order.id,
+      tableId: order.tableId,
+      tableName: order.tableName,
+    });
+
     await publishEvent(EVENTS.ORDER_CREATED, {
       event: EVENTS.ORDER_CREATED,
       orderId: order.id,
@@ -47,7 +49,10 @@ export const createOrder = async (req, res) => {
       items: order.items,
     });
 
-    res.status(201).json(order);
+    res.status(201).json({
+      ...order,
+      message: "Order created. Table occupation in progress...",
+    });
   } catch (error) {
     console.error("Error creating order:", error);
     res.status(500).json({ error: "Failed to create order" });
