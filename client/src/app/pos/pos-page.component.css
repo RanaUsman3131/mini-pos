@@ -101,6 +101,32 @@
   border-radius: 20px;
 }
 
+.table-actions {
+  margin-top: 0.5rem;
+  z-index: 10;
+}
+
+.table-actions .btn {
+  font-size: 0.75rem;
+  padding: 0.25rem 0.5rem;
+  border-radius: 6px;
+  white-space: nowrap;
+}
+
+.table-actions .dropdown-menu {
+  min-width: 160px;
+}
+
+.table-box.booked .table-actions .btn {
+  border-color: #dc3545;
+  color: #dc3545;
+}
+
+.table-box.selected .table-actions .btn {
+  border-color: #667eea;
+  color: #667eea;
+}
+
 /* Menu Cards */
 .menu-section {
   overflow-y: auto;

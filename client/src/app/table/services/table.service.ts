@@ -28,4 +28,8 @@ export class TableService extends AbstractBaseService<Table> {
     super(http);
     this.register();
   }
+
+  public updateStatus(tableId: string, status: string) {
+    return this.http.put(`${this.path}/${tableId}`, { status });
+  }
 }

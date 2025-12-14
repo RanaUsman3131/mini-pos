@@ -1,6 +1,6 @@
 import { Component, signal, OnInit } from '@angular/core';
 import { CommonModule } from '@angular/common';
-import { NgbToastModule } from '@ng-bootstrap/ng-bootstrap';
+import { NgbToastModule, NgbDropdownModule } from '@ng-bootstrap/ng-bootstrap';
 
 import { Menu, MenuService } from '../menu/services/menu.service';
 import { Table, TableService } from '../table/services/table.service';
@@ -12,7 +12,7 @@ import { ToastrService } from 'ngx-toastr';
 @Component({
   selector: 'app-pos-page',
   standalone: true,
-  imports: [CommonModule, NgbToastModule],
+  imports: [CommonModule, NgbToastModule, NgbDropdownModule],
   templateUrl: './pos-page.component.html',
   styleUrls: ['./pos-page.component.css'],
 })
@@ -139,8 +139,11 @@ export class PosPageComponent implements OnInit {
 
       await firstValueFrom(this.orderService.post(payload));
       this.cart.set({ tableId: null, items: [] });
-      await this.loadOrders(); // Reload orders after placing new order
+      await this.loadOrders();
       this.toastr.success('Order placed successfully!');
+      setTimeout(() => {
+        this.loadTables();
+      }, 2000);
     } catch (err) {
       console.error('Error placing order:', err);
       this.toastr.error('Failed to place order. Please try again.');
@@ -167,5 +170,16 @@ export class PosPageComponent implements OnInit {
   public getOrderItemsCount(order: any): number {
     if (!order?.items) return 0;
     return order.items.reduce((sum: number, item: any) => sum + (item.quantity || 0), 0);
+  }
+
+  public async updateTableStatus(table: Table, newStatus: string) {
+    try {
+      await firstValueFrom(this.tableService.updateStatus(table.id, newStatus));
+      await this.loadTables();
+      this.toastr.success(`Table status updated to ${newStatus}!`);
+    } catch (err) {
+      console.error('Error updating table status:', err);
+      this.toastr.error('Failed to update table status.');
+    }
   }
 }
