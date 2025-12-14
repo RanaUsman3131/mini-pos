@@ -55,7 +55,12 @@ export const handleOrderEnriched = async (payload) => {
 export const handleOrderFailed = async (payload) => {
   try {
     const { orderId, reason } = payload;
-
+    console.log(
+      "Handling order failure for orderId:",
+      orderId,
+      "Reason:",
+      reason
+    );
     await updateOrder(orderId, {
       status: "FAILED",
       failureReason: reason,

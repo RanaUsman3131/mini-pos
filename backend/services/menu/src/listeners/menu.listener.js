@@ -32,6 +32,7 @@ export const setupMenuListeners = async () => {
 
 export const handleOrderCreated = async (payload) => {
   try {
+    console.log("[MENU] Processing ORDER_CREATED event:", payload);
     const { orderId, tableId, items } = payload;
 
     const enrichedItems = [];
