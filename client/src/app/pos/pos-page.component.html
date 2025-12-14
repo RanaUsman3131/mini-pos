@@ -12,7 +12,15 @@
           <div class="card-header">📍 Tables</div>
           <div class="card-body">
             <div class="row g-3">
-              @if (tables() && tables()!.data) { @for (table of tables()!.data; track table.id) {
+              @if(loadingTables() && !(tables() && tables()!.data) ){
+              <div class="loader-container">
+                <div class="spinner-border text-primary" role="status">
+                  <span class="visually-hidden">Loading...</span>
+                </div>
+                <p class="mt-2 text-muted">Loading tables...</p>
+              </div>
+
+              } @if ( tables() && tables()!.data) { @for (table of tables()!.data; track table.id) {
               <div class="col-6 col-md-4 col-lg-3">
                 <div
                   class="table-box"
@@ -62,7 +70,7 @@
                   </div>
                 </div>
               </div>
-              } } @if (!tables()?.data?.length) {
+              } } @if (!tables()?.data?.length && !loadingTables()) {
               <div class="col-12">
                 <div class="empty-state">No tables available</div>
               </div>
@@ -79,7 +87,15 @@
           </div>
           <div class="card-body menu-section">
             <div class="row g-3">
-              @if (menus() && menus()!.data) { @for (item of menus()!.data; track item.id) {
+              @if(loadingMenus()){
+              <div class="loader-container">
+                <div class="spinner-border text-primary" role="status">
+                  <span class="visually-hidden">Loading...</span>
+                </div>
+                <p class="mt-2 text-muted">Loading menus...</p>
+              </div>
+              } @if (!loadingMenus()&& menus() && menus()!.data) { @for (item of menus()!.data;
+              track item.id) {
               <div class="col-12 col-sm-6 col-md-4 col-lg-3">
                 <div class="menu-card" (click)="addItem(item)">
                   <div class="menu-card-image">
@@ -100,7 +116,7 @@
                   </div>
                 </div>
               </div>
-              } } @if (!menus()?.data?.length) {
+              } } @if (!menus()?.data?.length && !loadingMenus()) {
               <div class="col-12">
                 <div class="empty-state">No menu items available</div>
               </div>
@@ -202,7 +218,14 @@
             <span class="badge bg-light text-dark">{{ orders()?.data?.length || 0 }}</span>
           </div>
           <div class="card-body order-body">
-            @if (orders() && orders()!.data && orders()!.data.length > 0) {
+            @if(loadingOrders()){
+            <div class="loader-container">
+              <div class="spinner-border text-primary" role="status">
+                <span class="visually-hidden">Loading...</span>
+              </div>
+              <p class="mt-2 text-muted">Loading orders...</p>
+            </div>
+            } @if (orders() && orders()!.data && orders()!.data.length > 0) {
             <div class="orders-list">
               @for (order of orders()!.data; track order.id) {
               <div class="order-item" (click)="viewOrderDetails(order)">
@@ -248,12 +271,12 @@
               </div>
               }
             </div>
-            } @else {
+            } @else { @if(!loadingOrders()){
             <div class="empty-state py-4">
               <div style="font-size: 2rem; opacity: 0.3">📝</div>
               <p class="text-muted mb-0">No orders yet</p>
             </div>
-            }
+            } }
           </div>
         </div>
       </div>

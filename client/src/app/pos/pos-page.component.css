@@ -518,3 +518,25 @@
 .modal-footer {
   border-top: 1px solid #e0e0e0;
 }
+
+/* Loader Styles */
+.loader-container {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+  padding: 3rem 1rem;
+  min-height: 200px;
+}
+
+.loader-container .spinner-border {
+  width: 3rem;
+  height: 3rem;
+  border-width: 0.3rem;
+}
+
+.loader-container p {
+  margin-top: 1rem;
+  font-size: 0.95rem;
+  color: #6c757d;
+}

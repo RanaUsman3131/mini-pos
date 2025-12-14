@@ -23,6 +23,10 @@ export class PosPageComponent implements OnInit {
   public selectedOrder = signal<Order | null>(null);
   public showOrderModal = signal<boolean>(false);
 
+  public loadingTables = signal<boolean>(false);
+  public loadingMenus = signal<boolean>(false);
+  public loadingOrders = signal<boolean>(false);
+
   public cart = signal<{
     tableId: string | null;
     tableName?: string;
@@ -47,21 +51,41 @@ export class PosPageComponent implements OnInit {
   }
 
   public async loadTables() {
-    const data = await firstValueFrom(this.tableService.get<DocumentCollection<Table>>());
-    this.tables.set(data);
+    this.loadingTables.set(true);
+    try {
+      const data = await firstValueFrom(this.tableService.get<DocumentCollection<Table>>());
+      this.tables.set(data);
+    } catch (err) {
+      console.error('Error loading tables:', err);
+      this.toastr.error('Failed to load tables');
+    } finally {
+      this.loadingTables.set(false);
+    }
   }
 
   public async loadMenus() {
-    const data = await firstValueFrom(this.menuService.get<DocumentCollection<Menu>>());
-    this.menus.set(data);
+    this.loadingMenus.set(true);
+    try {
+      const data = await firstValueFrom(this.menuService.get<DocumentCollection<Menu>>());
+      this.menus.set(data);
+    } catch (err) {
+      console.error('Error loading menus:', err);
+      this.toastr.error('Failed to load menus');
+    } finally {
+      this.loadingMenus.set(false);
+    }
   }
 
   public async loadOrders() {
+    this.loadingOrders.set(true);
     try {
       const data = await firstValueFrom(this.orderService.get<DocumentCollection<Order>>());
       this.orders.set(data);
     } catch (err) {
       console.error('Error loading orders:', err);
+      this.toastr.error('Failed to load orders');
+    } finally {
+      this.loadingOrders.set(false);
     }
   }
 
