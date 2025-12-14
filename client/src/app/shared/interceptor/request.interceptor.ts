@@ -1,6 +1,7 @@
 import { HttpHandlerFn, HttpRequest } from '@angular/common/http';
 
 import { replace } from 'lodash';
+import { environment } from '../../../environments/environment';
 
 declare global {
   interface Window {
@@ -19,7 +20,7 @@ export function requestInterceptor(req: HttpRequest<unknown>, next: HttpHandlerF
   window.EXPORTMODE = false;
 
   if (!req.url.startsWith('http')) {
-    const baseUrl = replace('http://localhost:8005', /\/+$/, ''); // Remove trailing slashes
+    const baseUrl = replace(environment.apiBaseUrl, /\/+$/, ''); // Remove trailing slashes
     const requestUrl = replace(req.url, /^\/+/, '');
 
     return next(
