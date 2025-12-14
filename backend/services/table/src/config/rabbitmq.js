@@ -2,7 +2,7 @@ import amqp from "amqplib";
 
 let channel = null;
 const RABBITMQ_URL = process.env.RABBITMQ_URL || "amqp://localhost";
-const EXCHANGE_NAME = "pos_events";
+const EXCHANGE_NAME = "mini_pos_events";
 
 export const connectRabbitMQ = async () => {
   try {
