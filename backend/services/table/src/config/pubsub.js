@@ -1,4 +1,9 @@
 import { PubSub } from "@google-cloud/pubsub";
+import path from "path";
+import { fileURLToPath } from "url";
+
+const __filename = fileURLToPath(import.meta.url);
+const __dirname = path.dirname(__filename);
 
 let pubSubClient = null;
 
@@ -12,8 +17,10 @@ export const connectPubSub = async () => {
 
     pubSubClient = new PubSub({
       projectId: PROJECT_ID,
-      keyFilename:
-        "/home/usmankhan/Dev/mini-pos/backend/shared/firebase/firebase-key.json",
+      keyFilename: path.join(
+        __dirname,
+        "../../../../shared/firebase/firebase-key.json"
+      ),
     });
 
     console.log("[PubSub] Connected successfully");

@@ -1,11 +1,16 @@
 import admin from "firebase-admin";
 import fs from "fs";
+import path from "path";
+import { fileURLToPath } from "url";
+
+const __filename = fileURLToPath(import.meta.url);
+const __dirname = path.dirname(__filename);
 
 admin.initializeApp({
   credential: admin.credential.cert(
     JSON.parse(
       fs.readFileSync(
-        "/home/usmankhan/Dev/mini-pos/backend/shared/firebase/firebase-key.json",
+        path.join(__dirname, "../../../../shared/firebase/firebase-key.json"),
         "utf8"
       )
     )
