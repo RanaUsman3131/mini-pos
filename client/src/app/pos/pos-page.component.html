@@ -243,7 +243,8 @@
                       [ngClass]="{
                         'bg-warning text-dark': order.status === 'PENDING',
                         'bg-success': order.status === 'CONFIRMED',
-                        'bg-danger': order.status != 'PENDING' && order.status != 'CONFIRMED' ,
+                        'bg-info': order.status === 'COMPLETED',
+                        'bg-danger': order.status != 'PENDING' && order.status != 'CONFIRMED' && order.status != 'COMPLETED',
 
                       }"
                     >
@@ -266,6 +267,15 @@
                   <small class="text-danger">
                     <strong>⚠️ {{ order.failureReason }}</strong>
                   </small>
+                </div>
+                } @if (order.status === 'CONFIRMED') {
+                <div class="mt-2">
+                  <button
+                    class="btn btn-sm btn-success w-100"
+                    (click)="completeOrder(order); $event.stopPropagation()"
+                  >
+                    ✅ Complete Order
+                  </button>
                 </div>
                 }
               </div>
@@ -319,7 +329,8 @@
                 [ngClass]="{
                   'bg-warning': selectedOrder()!.status === 'PENDING',
                   'bg-success': selectedOrder()!.status === 'CONFIRMED',
-                  'bg-danger': selectedOrder()!.status != 'PENDING' && selectedOrder()!.status != 'CONFIRMED' ,
+                  'bg-info': selectedOrder()!.status === 'COMPLETED',
+                  'bg-danger': selectedOrder()!.status != 'PENDING' && selectedOrder()!.status != 'CONFIRMED' && selectedOrder()!.status != 'COMPLETED',
 
                 }"
               >
@@ -377,6 +388,15 @@
         </div>
       </div>
       <div class="modal-footer">
+        @if (selectedOrder()!.status === 'CONFIRMED') {
+        <button
+          type="button"
+          class="btn btn-success"
+          (click)="completeOrder(selectedOrder()!); closeOrderModal()"
+        >
+          ✅ Complete Order
+        </button>
+        }
         <button type="button" class="btn btn-secondary" (click)="closeOrderModal()">Close</button>
       </div>
     </div>

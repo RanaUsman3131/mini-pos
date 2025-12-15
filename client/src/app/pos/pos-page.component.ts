@@ -1,4 +1,4 @@
-import { Component, signal, OnInit } from '@angular/core';
+import { Component, signal, OnInit, OnDestroy } from '@angular/core';
 import { CommonModule } from '@angular/common';
 import { NgbToastModule, NgbDropdownModule } from '@ng-bootstrap/ng-bootstrap';
 
@@ -6,8 +6,9 @@ import { Menu, MenuService } from '../menu/services/menu.service';
 import { Table, TableService } from '../table/services/table.service';
 import { Order, OrderService } from '../order/services/order.service';
 import { DocumentCollection } from '../shared/resources/resource';
-import { firstValueFrom } from 'rxjs';
+import { firstValueFrom, skip } from 'rxjs';
 import { ToastrService } from 'ngx-toastr';
+import { FirebaseService } from '../shared/services/firebase.service';
 
 @Component({
   selector: 'app-pos-page',
@@ -16,7 +17,7 @@ import { ToastrService } from 'ngx-toastr';
   templateUrl: './pos-page.component.html',
   styleUrls: ['./pos-page.component.css'],
 })
-export class PosPageComponent implements OnInit {
+export class PosPageComponent implements OnInit, OnDestroy {
   public tables = signal<DocumentCollection<Table> | null>(null);
   public menus = signal<DocumentCollection<Menu> | null>(null);
   public orders = signal<DocumentCollection<Order> | null>(null);
@@ -43,11 +44,28 @@ export class PosPageComponent implements OnInit {
     protected menuService: MenuService,
     protected tableService: TableService,
     protected orderService: OrderService,
-    protected toastr: ToastrService
+    protected toastr: ToastrService,
+    protected firebaseService: FirebaseService
   ) {}
 
   public async ngOnInit() {
     Promise.allSettled([this.loadTables(), this.loadMenus(), this.loadOrders()]);
+
+    // Subscribe to Firebase real-time updates
+    this.firebaseService.subscribeToOrders();
+    this.firebaseService.subscribeToTables();
+
+    this.firebaseService.orders$.pipe(skip(1)).subscribe((orders) => {
+      this.orders.set({ data: orders } as DocumentCollection<Order>);
+    });
+
+    this.firebaseService.tables$.pipe(skip(1)).subscribe((tables) => {
+      this.tables.set({ data: tables } as DocumentCollection<Table>);
+    });
+  }
+
+  public ngOnDestroy() {
+    this.firebaseService.unsubscribeAll();
   }
 
   public async loadTables() {
@@ -163,11 +181,8 @@ export class PosPageComponent implements OnInit {
 
       await firstValueFrom(this.orderService.post(payload));
       this.cart.set({ tableId: null, items: [] });
-      await this.loadOrders();
+
       this.toastr.success('Order placed successfully!');
-      setTimeout(() => {
-        this.loadTables();
-      }, 2000);
     } catch (err) {
       console.error('Error placing order:', err);
       this.toastr.error('Failed to place order. Please try again.');
@@ -199,11 +214,23 @@ export class PosPageComponent implements OnInit {
   public async updateTableStatus(table: Table, newStatus: string) {
     try {
       await firstValueFrom(this.tableService.updateStatus(table.id, newStatus));
-      await this.loadTables();
+
       this.toastr.success(`Table status updated to ${newStatus}!`);
     } catch (err) {
       console.error('Error updating table status:', err);
       this.toastr.error('Failed to update table status.');
+    }
+  }
+
+  public async completeOrder(order: Order) {
+    try {
+      await firstValueFrom(order.markAsComplete());
+      this.toastr.success('Order completed successfully! Table is now being released.');
+      // Firebase real-time listener will automatically update the UI
+    } catch (err: any) {
+      console.error('Error completing order:', err);
+      const errorMsg = err?.error?.error || 'Failed to complete order';
+      this.toastr.error(errorMsg);
     }
   }
 }

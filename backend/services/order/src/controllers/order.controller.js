@@ -84,3 +84,41 @@ export const getOrderById = async (req, res) => {
     res.status(500).json({ error: "Failed to fetch order" });
   }
 };
+
+export const completeOrder = async (req, res) => {
+  try {
+    const { id } = req.params;
+    const order = await repo.getOrderById(id);
+
+    if (!order) {
+      return res.status(404).json({ error: "Order not found" });
+    }
+
+    if (order.status !== "CONFIRMED") {
+      return res.status(400).json({
+        error: "Only confirmed orders can be completed",
+        currentStatus: order.status,
+      });
+    }
+
+    const updatedOrder = await repo.updateOrder(id, {
+      status: "COMPLETED",
+      completedAt: new Date().toISOString(),
+    });
+
+    await publishEvent(EVENTS.TABLE_RELEASE_REQUESTED, {
+      orderId: id,
+      tableId: order.tableId,
+      tableName: order.tableName,
+    });
+
+    res.json({
+      ...order,
+      ...updatedOrder,
+      message: "Order completed. Table release in progress...",
+    });
+  } catch (error) {
+    console.error("Error completing order:", error);
+    res.status(500).json({ error: "Failed to complete order" });
+  }
+};

@@ -25,6 +25,10 @@ export class Order extends Resource {
   public updatable: string[] = [];
   public fillable: string[] = [];
   public static resourceType = 'Order';
+
+  public markAsComplete() {
+    return this.patch(`${this.id}/complete`, {});
+  }
 }
 
 @Injectable({
