@@ -11,14 +11,19 @@ import {
 import { environment } from '../../../environments/environment';
 import { Subject } from 'rxjs';
 
+export interface FirestoreChange<T = any> {
+  type: 'added' | 'modified' | 'removed';
+  doc: T;
+}
+
 @Injectable({
   providedIn: 'root',
 })
 export class FirebaseService {
   private app: FirebaseApp;
   private firestore: Firestore;
-  private ordersSubject = new Subject<any[]>();
-  private tablesSubject = new Subject<any[]>();
+  private ordersSubject = new Subject<FirestoreChange[]>();
+  private tablesSubject = new Subject<FirestoreChange[]>();
 
   public orders$ = this.ordersSubject.asObservable();
   public tables$ = this.tablesSubject.asObservable();
@@ -42,11 +47,16 @@ export class FirebaseService {
     this.ordersUnsubscribe = onSnapshot(
       ordersQuery,
       (snapshot) => {
-        const orders = snapshot.docs.map((doc) => ({
-          id: doc.id,
-          ...doc.data(),
+        const changes: FirestoreChange[] = snapshot.docChanges().map((change) => ({
+          type: change.type,
+          doc: {
+            id: change.doc.id,
+            ...change.doc.data(),
+          },
         }));
-        this.ordersSubject.next(orders);
+        if (changes.length > 0) {
+          this.ordersSubject.next(changes);
+        }
       },
       (error) => {
         console.error('Error listening to orders:', error);
@@ -65,11 +75,16 @@ export class FirebaseService {
     this.tablesUnsubscribe = onSnapshot(
       tablesQuery,
       (snapshot) => {
-        const tables = snapshot.docs.map((doc) => ({
-          id: doc.id,
-          ...doc.data(),
+        const changes: FirestoreChange[] = snapshot.docChanges().map((change) => ({
+          type: change.type,
+          doc: {
+            id: change.doc.id,
+            ...change.doc.data(),
+          },
         }));
-        this.tablesSubject.next(tables);
+        if (changes.length > 0) {
+          this.tablesSubject.next(changes);
+        }
       },
       (error) => {
         console.error('Error listening to tables:', error);

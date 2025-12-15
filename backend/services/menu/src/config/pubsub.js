@@ -7,7 +7,7 @@ const __dirname = path.dirname(__filename);
 
 let pubSubClient = null;
 
-const PROJECT_ID = "mini-pos-fc760" || process.env.PROJECT_ID;
+const PROJECT_ID = process.env.PROJECT_ID;
 const isProduction = process.env.NODE_ENV === "production";
 const keyPath = isProduction
   ? "/etc/secrets/firebase-key.json"

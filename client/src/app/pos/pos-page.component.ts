@@ -5,7 +5,7 @@ import { NgbToastModule, NgbDropdownModule } from '@ng-bootstrap/ng-bootstrap';
 import { Menu, MenuService } from '../menu/services/menu.service';
 import { Table, TableService } from '../table/services/table.service';
 import { Order, OrderService } from '../order/services/order.service';
-import { DocumentCollection } from '../shared/resources/resource';
+import { DocumentCollection, DocumentResource } from '../shared/resources/resource';
 import { firstValueFrom, skip } from 'rxjs';
 import { ToastrService } from 'ngx-toastr';
 import { FirebaseService } from '../shared/services/firebase.service';
@@ -55,12 +55,50 @@ export class PosPageComponent implements OnInit, OnDestroy {
     this.firebaseService.subscribeToOrders();
     this.firebaseService.subscribeToTables();
 
-    this.firebaseService.orders$.pipe(skip(1)).subscribe((orders) => {
-      this.orders.set({ data: orders } as DocumentCollection<Order>);
+    this.firebaseService.orders$.pipe(skip(1)).subscribe((changes) => {
+      const currentOrders = this.orders();
+      if (!currentOrders?.data) return;
+
+      const updatedData = [...currentOrders.data];
+
+      changes.forEach((change) => {
+        const index = updatedData.findIndex((o) => o.id === change.doc.id);
+        const order = new Order();
+        if (change.type === 'added' && index === -1) {
+          updatedData.push(order.fill(change.doc));
+        } else if (change.type === 'modified' && index !== -1) {
+          updatedData[index] = order.fill(change.doc);
+        } else if (change.type === 'removed' && index !== -1) {
+          updatedData.splice(index, 1);
+        }
+      });
+
+      currentOrders.data = [...updatedData];
+      this.orders.set(null);
+      this.orders.set(currentOrders);
     });
 
-    this.firebaseService.tables$.pipe(skip(1)).subscribe((tables) => {
-      this.tables.set({ data: tables } as DocumentCollection<Table>);
+    this.firebaseService.tables$.pipe(skip(1)).subscribe((changes) => {
+      const currentTables = this.tables();
+      if (!currentTables?.data) return;
+
+      const updatedData = [...currentTables.data];
+
+      changes.forEach((change) => {
+        const index = updatedData.findIndex((t) => t.id === change.doc.id);
+        const newTable = new Table();
+        if (change.type === 'added' && index === -1) {
+          updatedData.push(newTable.fill(change.doc));
+        } else if (change.type === 'modified' && index !== -1) {
+          updatedData[index] = newTable.fill(change.doc);
+        } else if (change.type === 'removed' && index !== -1) {
+          updatedData.splice(index, 1);
+        }
+      });
+      currentTables.data = [...updatedData];
+
+      this.tables.set(null);
+      this.tables.set(currentTables);
     });
   }
 

@@ -19,7 +19,6 @@ A microservices-based Point of Sale (POS) system built with Node.js/Express back
 - [Event-Driven Features](#event-driven-features)
 - [Development](#development)
 - [Troubleshooting](#troubleshooting)
-- [License](#license)
 
 ---
 
@@ -56,7 +55,7 @@ The project follows a **microservices architecture** with clear separation of co
 ┌────────┐ ┌──────┐ ┌─────────┐ ┌──────────┐
 │  Menu  │ │Table │ │ Orders  │ │ Firebase │
 │Service │ │Service│ │ Service │ │Firestore │
-│  8001  │ │ 8002 │ │  8003   │ │          │
+│  8006  │ │ 8007 │ │  8008   │ │          │
 └────────┘ └──────┘ └─────────┘ └──────────┘
 ```
 
@@ -399,13 +398,13 @@ Create a `.env` file in each service directory:
 
 ```env
 # backend/services/menu/.env
-PORT=8001
+PORT=8006
 
 # backend/services/table/.env
-PORT=8002
+PORT=8007
 
 # backend/services/order/.env
-PORT=8003
+PORT=8008
 ```
 
 ### Frontend
@@ -590,38 +589,10 @@ npm start
 - Check all backend services are running
 - Verify proxy URLs in `backend/gateway/index.js` match service ports:
   ```javascript
-  app.use("/menu", proxy("http://localhost:8001", proxyOptions));
-  app.use("/table", proxy("http://localhost:8002", proxyOptions));
-  app.use("/orders", proxy("http://localhost:8003", proxyOptions));
+  app.use("/menu", proxy("http://localhost:8006", proxyOptions));
+  app.use("/table", proxy("http://localhost:8007", proxyOptions));
+  app.use("/orders", proxy("http://localhost:8008", proxyOptions));
   ```
-
----
-
-## 📄 License
-
-This project is open-source and available under the [MIT License](LICENSE).
-
----
-
-## 🤝 Contributing
-
-Contributions are welcome! To contribute:
-
-1. Fork the repository
-2. Create a feature branch (`git checkout -b feature/amazing-feature`)
-3. Commit your changes (`git commit -m 'Add amazing feature'`)
-4. Push to the branch (`git push origin feature/amazing-feature`)
-5. Open a Pull Request
-
----
-
-## 📧 Contact
-
-**Project Maintainer:** Rana Usman  
-**GitHub:** [@RanaUsman3131](https://github.com/RanaUsman3131)  
-**Repository:** [mini-pos](https://github.com/RanaUsman3131/mini-pos)
-
----
 
 ## 🎉 Quick Start Summary
 
@@ -654,7 +625,3 @@ cd client && npm start
 # 6. Open browser
 # http://localhost:4200
 ```
-
----
-
-**Happy Coding! 🚀**
