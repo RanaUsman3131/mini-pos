@@ -1,6 +1,11 @@
 import { db } from "../firebase/firebase.js";
 import { publishEvent } from "../events/event.publisher.js";
-import { consumeQueue, connectRabbitMQ } from "../config/rabbitmq.js";
+import {
+  subscribeToTopic,
+  connectPubSub,
+  createTopicIfNotExists,
+  createSubscriptionIfNotExists,
+} from "../config/pubsub.js";
 
 const ORDER_EVENTS = {
   ORDER_CREATED: "ORDER_CREATED",
@@ -8,24 +13,24 @@ const ORDER_EVENTS = {
   ORDER_FAILED: "ORDER_FAILED",
 };
 
-const QUEUE_NAME = "menu_service_queue";
+const TOPIC_NAME = "mini-pos-events";
+const SUBSCRIPTION_NAME = "menu-service-subscription";
 
 export const setupMenuListeners = async () => {
   try {
-    await connectRabbitMQ();
+    await connectPubSub();
+    await createTopicIfNotExists(TOPIC_NAME);
+    await createSubscriptionIfNotExists(TOPIC_NAME, SUBSCRIPTION_NAME);
 
-    await consumeQueue(
-      QUEUE_NAME,
-      [ORDER_EVENTS.ORDER_CREATED],
-      async (message, routingKey) => {
-        if (routingKey === ORDER_EVENTS.ORDER_CREATED) {
-          await handleOrderCreated(message);
-        }
+    await subscribeToTopic(SUBSCRIPTION_NAME, async (message, eventType) => {
+      if (eventType === ORDER_EVENTS.ORDER_CREATED) {
+        await handleOrderCreated(message);
       }
-    );
+    });
+
+    console.log("[MENU] Listeners setup complete");
   } catch (error) {
     console.error("[LISTENER] Failed to setup listeners:", error);
-    // Retry connection after 5 seconds
     setTimeout(setupMenuListeners, 5000);
   }
 };
@@ -81,7 +86,7 @@ export const handleOrderCreated = async (payload) => {
       grandTotal,
     });
   } catch (error) {
-    console.error(`[MENU] Failed to process order:`, error.message);
+    console.error(`[MENU] Failed to process order:`, error);
 
     // Emit ORDER_FAILED event
     await publishEvent(ORDER_EVENTS.ORDER_FAILED, {
