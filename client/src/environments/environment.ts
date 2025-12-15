@@ -1,5 +1,6 @@
 // environment.ts
 export const environment = {
   production: false,
-  apiBaseUrl: 'http://localhost:8005',
+  apiBaseUrl: 'https://mini-pos.onrender.com',
+  // apiBaseUrl: 'http://localhost:8005',
 };
