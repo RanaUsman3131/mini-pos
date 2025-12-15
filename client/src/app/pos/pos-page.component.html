@@ -40,34 +40,6 @@
                     <span class="badge bg-danger">Occupied</span>
                     }
                   </div>
-                  <div class="table-actions">
-                    <div ngbDropdown class="d-inline-block">
-                      <button
-                        type="button"
-                        class="btn btn-sm btn-outline-secondary dropdown-toggle"
-                        id="tableDropdown{{ table.id }}"
-                        ngbDropdownToggle
-                      >
-                        Update Status
-                      </button>
-                      <div ngbDropdownMenu [attr.aria-labelledby]="'tableDropdown' + table.id">
-                        <button
-                          ngbDropdownItem
-                          (click)="updateTableStatus(table, 'available')"
-                          [disabled]="table.status === 'available'"
-                        >
-                          ✅ Mark as Available
-                        </button>
-                        <button
-                          ngbDropdownItem
-                          (click)="updateTableStatus(table, 'occupied')"
-                          [disabled]="table.status === 'occupied'"
-                        >
-                          🔒 Mark as Occupied
-                        </button>
-                      </div>
-                    </div>
-                  </div>
                 </div>
               </div>
               } } @if (!tables()?.data?.length && !loadingTables()) {

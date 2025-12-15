@@ -66,7 +66,7 @@ export class PosPageComponent implements OnInit, OnDestroy {
         const index = updatedData.findIndex((o) => o.id === change.doc.id);
         const order = new Order();
         if (change.type === 'added' && index === -1) {
-          updatedData.push(order.fill(change.doc));
+          updatedData.unshift(order.fill(change.doc));
         } else if (change.type === 'modified' && index !== -1) {
           updatedData[index] = order.fill(change.doc);
         } else if (change.type === 'removed' && index !== -1) {
