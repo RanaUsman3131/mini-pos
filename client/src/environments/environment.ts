@@ -1,8 +1,8 @@
 // environment.ts
 export const environment = {
   production: false,
-  // apiBaseUrl: 'https://mini-pos.onrender.com',
-  apiBaseUrl: 'http://localhost:8005',
+  apiBaseUrl: 'https://mini-pos.onrender.com',
+  // apiBaseUrl: 'http://localhost:8005',
   firebase: {
     apiKey: 'AIzaSyDc7l-o7RGDrzpePm9K5aTVXdv_j2dQ520',
     authDomain: 'mini-pos-fc760.firebaseapp.com',
