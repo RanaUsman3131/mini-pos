@@ -101,7 +101,7 @@ The project follows a **microservices architecture** with clear separation of co
 - **Runtime**: Node.js (ES Modules)
 - **Framework**: Express 5.x
 - **Database**: Firebase Firestore
-- **Message Queue**: RabbitMQ (amqplib) for event distribution
+- **Message Queue**: Firebase Pub/Sub for event-driven communication
 - **Proxy**: express-http-proxy
 - **Dev Tools**: nodemon
 

@@ -1,37 +1,37 @@
 import { updateOrder, deleteOrder } from "../repositories/order.repo.js";
 import { EVENTS } from "../constants/eventTypes.js";
-import { consumeQueue, connectRabbitMQ } from "../config/rabbitmq.js";
+import {
+  subscribeToTopic,
+  connectPubSub,
+  createTopicIfNotExists,
+  createSubscriptionIfNotExists,
+} from "../config/pubsub.js";
 import { publishEvent } from "../events/event.publisher.js";
 
-const QUEUE_NAME = "order_service_queue";
+const TOPIC_NAME = "mini-pos-events";
+const SUBSCRIPTION_NAME = "order-service-subscription";
 
 export const setupOrderListeners = async () => {
   try {
-    await connectRabbitMQ();
+    await connectPubSub();
+    await createTopicIfNotExists(TOPIC_NAME);
+    await createSubscriptionIfNotExists(TOPIC_NAME, SUBSCRIPTION_NAME);
 
-    await consumeQueue(
-      QUEUE_NAME,
-      [
-        EVENTS.ORDER_ENRICHED,
-        EVENTS.ORDER_FAILED,
-        EVENTS.TABLE_OCCUPIED,
-        EVENTS.TABLE_OCCUPY_FAILED,
-      ],
-      async (message, routingKey) => {
-        if (routingKey === EVENTS.ORDER_ENRICHED) {
-          await handleOrderEnriched(message);
-        } else if (routingKey === EVENTS.ORDER_FAILED) {
-          await handleOrderFailed(message);
-        } else if (routingKey === EVENTS.TABLE_OCCUPIED) {
-          await handleTableOccupied(message);
-        } else if (routingKey === EVENTS.TABLE_OCCUPY_FAILED) {
-          await handleTableOccupyFailed(message);
-        }
+    await subscribeToTopic(SUBSCRIPTION_NAME, async (message, eventType) => {
+      if (eventType === EVENTS.ORDER_ENRICHED) {
+        await handleOrderEnriched(message);
+      } else if (eventType === EVENTS.ORDER_FAILED) {
+        await handleOrderFailed(message);
+      } else if (eventType === EVENTS.TABLE_OCCUPIED) {
+        await handleTableOccupied(message);
+      } else if (eventType === EVENTS.TABLE_OCCUPY_FAILED) {
+        await handleTableOccupyFailed(message);
       }
-    );
+    });
+
+    console.log("[ORDER] Listeners setup complete");
   } catch (error) {
     console.error("[LISTENER] Failed to setup listeners:", error);
-    // Retry connection after 5 seconds
     setTimeout(setupOrderListeners, 5000);
   }
 };
