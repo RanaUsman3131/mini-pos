@@ -8,6 +8,10 @@ const __dirname = path.dirname(__filename);
 let pubSubClient = null;
 
 const PROJECT_ID = "mini-pos-fc760";
+const isProduction = process.env.NODE_ENV === "production";
+const keyPath = isProduction
+  ? "/etc/secrets/firebase-key.json"
+  : path.join(__dirname, "../../../../shared/firebase/firebase-key.json");
 
 export const connectPubSub = async () => {
   try {
@@ -17,10 +21,7 @@ export const connectPubSub = async () => {
 
     pubSubClient = new PubSub({
       projectId: PROJECT_ID,
-      keyFilename: path.join(
-        __dirname,
-        "../../../../shared/firebase/firebase-key.json"
-      ),
+      keyFilename: keyPath,
     });
 
     console.log("[PubSub] Connected successfully");
