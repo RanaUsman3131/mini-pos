@@ -54,6 +54,7 @@ export class PosPageComponent implements OnInit, OnDestroy {
     // Subscribe to Firebase real-time updates
     this.firebaseService.subscribeToOrders();
     this.firebaseService.subscribeToTables();
+    this.firebaseService.subscribeToMenus();
 
     this.firebaseService.orders$.pipe(skip(1)).subscribe((changes) => {
       const currentOrders = this.orders();
@@ -99,6 +100,29 @@ export class PosPageComponent implements OnInit, OnDestroy {
 
       this.tables.set(null);
       this.tables.set(currentTables);
+    });
+
+    this.firebaseService.menus$.pipe(skip(1)).subscribe((changes) => {
+      const currentMenus = this.menus();
+      if (!currentMenus?.data) return;
+
+      const updatedData = [...currentMenus.data];
+
+      changes.forEach((change) => {
+        const index = updatedData.findIndex((m) => m.id === change.doc.id);
+        const newMenu = new Menu();
+        if (change.type === 'added' && index === -1) {
+          updatedData.push(newMenu.fill(change.doc));
+        } else if (change.type === 'modified' && index !== -1) {
+          updatedData[index] = newMenu.fill(change.doc);
+        } else if (change.type === 'removed' && index !== -1) {
+          updatedData.splice(index, 1);
+        }
+      });
+      currentMenus.data = [...updatedData];
+
+      this.menus.set(null);
+      this.menus.set(currentMenus);
     });
   }
 

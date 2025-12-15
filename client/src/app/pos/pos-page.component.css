@@ -171,11 +171,25 @@
   display: flex;
   align-items: center;
   justify-content: center;
+  position: relative;
 }
 
 .menu-placeholder {
   font-size: 3rem;
   opacity: 0.5;
+}
+
+.out-of-stock-badge {
+  position: absolute;
+  top: 10px;
+  right: 10px;
+  background: #dc3545;
+  color: white;
+  padding: 4px 10px;
+  border-radius: 20px;
+  font-size: 0.75rem;
+  font-weight: 600;
+  box-shadow: 0 2px 8px rgba(220, 53, 69, 0.3);
 }
 
 .menu-card-content {
@@ -200,6 +214,34 @@
 .menu-category {
   color: #999;
   font-size: 0.85rem;
+}
+
+.menu-stock {
+  margin-top: 0.5rem;
+  font-size: 0.85rem;
+}
+
+.menu-stock.text-danger {
+  color: #dc3545 !important;
+}
+
+.menu-stock.text-warning {
+  color: #ffc107 !important;
+}
+
+.menu-stock.text-success {
+  color: #28a745 !important;
+}
+
+.menu-card.out-of-stock {
+  opacity: 0.6;
+  cursor: not-allowed;
+}
+
+.menu-card.out-of-stock:hover {
+  transform: none;
+  box-shadow: none;
+  border-color: #e0e0e0;
 }
 
 .menu-card-footer {

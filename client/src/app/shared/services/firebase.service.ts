@@ -24,12 +24,15 @@ export class FirebaseService {
   private firestore: Firestore;
   private ordersSubject = new Subject<FirestoreChange[]>();
   private tablesSubject = new Subject<FirestoreChange[]>();
+  private menusSubject = new Subject<FirestoreChange[]>();
 
   public orders$ = this.ordersSubject.asObservable();
   public tables$ = this.tablesSubject.asObservable();
+  public menus$ = this.menusSubject.asObservable();
 
   private ordersUnsubscribe: Unsubscribe | null = null;
   private tablesUnsubscribe: Unsubscribe | null = null;
+  private menusUnsubscribe: Unsubscribe | null = null;
 
   constructor() {
     this.app = initializeApp(environment.firebase);
@@ -92,6 +95,34 @@ export class FirebaseService {
     );
   }
 
+  public subscribeToMenus(): void {
+    if (this.menusUnsubscribe) {
+      return; // Already subscribed
+    }
+
+    const menusCollection = collection(this.firestore, 'menu_items');
+    const menusQuery = query(menusCollection);
+
+    this.menusUnsubscribe = onSnapshot(
+      menusQuery,
+      (snapshot) => {
+        const changes: FirestoreChange[] = snapshot.docChanges().map((change) => ({
+          type: change.type,
+          doc: {
+            id: change.doc.id,
+            ...change.doc.data(),
+          },
+        }));
+        if (changes.length > 0) {
+          this.menusSubject.next(changes);
+        }
+      },
+      (error) => {
+        console.error('Error listening to menus:', error);
+      }
+    );
+  }
+
   public unsubscribeFromOrders(): void {
     if (this.ordersUnsubscribe) {
       this.ordersUnsubscribe();
@@ -106,8 +137,16 @@ export class FirebaseService {
     }
   }
 
+  public unsubscribeFromMenus(): void {
+    if (this.menusUnsubscribe) {
+      this.menusUnsubscribe();
+      this.menusUnsubscribe = null;
+    }
+  }
+
   public unsubscribeAll(): void {
     this.unsubscribeFromOrders();
     this.unsubscribeFromTables();
+    this.unsubscribeFromMenus();
   }
 }

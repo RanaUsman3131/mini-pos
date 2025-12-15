@@ -9,6 +9,8 @@ export class Menu extends Resource {
   public name: string = '';
   public category: string = '';
   public price: number = 0;
+  public total_stock: number = 0;
+  public remaining_stock: number = 0;
 
   //Relationships
 
